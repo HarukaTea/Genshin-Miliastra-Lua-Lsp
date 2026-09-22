@@ -1,0 +1,9 @@
+.vscode/**
+**/*.ts
+**/*.map
+**/tsconfig.json
+server/log
+server/script/output.lua
+.gitignore
+TODO-LIST
+images/*.pdf
