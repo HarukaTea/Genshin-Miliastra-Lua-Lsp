@@ -3,6 +3,7 @@
 		"onLanguage:lua"
 	],
 	"author": "HarukaTea",
+	"repository": "https://github.com/HarukaTea/Miliastra-LSP",
 	"capabilities": {
 		"untrustedWorkspaces": {
 			"description": "",

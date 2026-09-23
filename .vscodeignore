@@ -1,7 +1,11 @@
 .vscode/**
+server/.vscode/**
 **/*.ts
 **/*.map
 **/tsconfig.json
+client/node_modules/typescript/**
+client/node_modules/@types/**
+client/node_modules/.bin/**
 server/log
 server/script/output.lua
 .gitignore
