@@ -272,16 +272,6 @@ function activate(context) {
             clients.set(folder.uri.toString(), client);
         }
     }
-    function didCloseTextDocument(document) {
-        let uri = document.uri;
-        if (clients.has(uri.toString())) {
-            let client = clients.get(uri.toString());
-            if (client) {
-                clients.delete(uri.toString());
-                client.stop();
-            }
-        }
-    }
     if (vscode_1.workspace.workspaceFolders != null) {
         vscode_1.workspace.workspaceFolders.forEach(folder => {
             folder = getOuterMostWorkspaceFolder(folder);
@@ -295,7 +285,6 @@ function activate(context) {
         });
     }
     vscode_1.workspace.onDidOpenTextDocument(didOpenTextDocument);
-    //Workspace.onDidCloseTextDocument(didCloseTextDocument);
     vscode_1.workspace.textDocuments.forEach(didOpenTextDocument);
     vscode_1.workspace.onDidChangeWorkspaceFolders((event) => {
         for (let folder of event.removed) {

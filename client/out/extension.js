@@ -6,7 +6,7 @@ const languageserver = require("./languageserver");
 function activate(context) {
     try {
         if (vscode.extensions.getExtension("sumneko.lua") != undefined) {
-            vscode.window.showErrorMessage("插件 [Lua](https://marketplace.visualstudio.com/items?itemName=sumneko.lua) 已启用，这个插件与千星LSP冲突了");
+            vscode.window.showErrorMessage("插件 [Lua](https://marketplace.visualstudio.com/items?itemName=sumneko.lua) 已启用，这个插件与千星奇域LSP冲突了");
         }
     }
     catch (err) {

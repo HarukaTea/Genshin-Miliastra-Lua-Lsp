@@ -2,4 +2,5 @@
 /server/bin
 /server/script/output.lua
 /client/node_modules
+/client/out/*.map
 TODO-LIST

@@ -3,7 +3,7 @@
 		"onLanguage:lua"
 	],
 	"author": "HarukaTea",
-	"repository": "https://github.com/HarukaTea/Miliastra-LSP",
+	"repository": "https://github.com/HarukaTea/Miliastra-Lua-Lsp",
 	"capabilities": {
 		"untrustedWorkspaces": {
 			"description": "",
@@ -343,7 +343,7 @@
 							"type": "string"
 						},
 						"undefined-doc-module": {
-							"default": "Any",
+							"default": "Opened",
 							"enum": [
 								"Any",
 								"Opened",
@@ -638,7 +638,7 @@
 							"type": "string"
 						},
 						"unbalanced-assignments": {
-							"default": "Warning",
+							"default": "Hint",
 							"enum": [
 								"Error",
 								"Warning",
@@ -715,7 +715,7 @@
 							"type": "string"
 						},
 						"unknown-diag-code": {
-							"default": "Waiting",
+							"default": "Warning",
 							"enum": [
 								"Error",
 								"Warning",
@@ -1053,7 +1053,7 @@
 					"type": "boolean"
 				}
 			},
-			"title": "千星奇域 LSP",
+			"title": "千星奇域 Lua LSP",
 			"type": "object"
 		},
 		"languages": [
@@ -1120,20 +1120,20 @@
 			}
 		]
 	},
-	"description": "千星奇域 Lua 语言服务器",
-	"displayName": "千星奇域 LSP",
+	"description": "千星Lua语法高亮，与自动补全",
+	"displayName": "千星奇域 Lua LSP",
 	"engines": {
 		"vscode": "^1.60.0"
 	},
 	"icon": "images/logo.png",
 	"keywords": [
-		"Luau",
+		"Lua",
 		"IntelliSense",
-		"千星奇域"
+		"千星奇域", "Miliastra"
 	],
 	"license": "MIT",
 	"main": "./client/out/extension",
 	"name": "miliastraLsp",
 	"publisher": "HarukaTea",
-	"version": "0.0.1"
+	"version": "0.0.3"
 }

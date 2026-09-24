@@ -345,17 +345,6 @@ export function activate(context: ExtensionContext) {
         }
     }
 
-    function didCloseTextDocument(document: TextDocument): void {
-        let uri = document.uri;
-        if (clients.has(uri.toString())) {
-            let client = clients.get(uri.toString());
-            if (client) {
-                clients.delete(uri.toString());
-                client.stop();
-            }
-        }
-    }
-
     if (Workspace.workspaceFolders != null) {
         Workspace.workspaceFolders.forEach(folder => {
             folder = getOuterMostWorkspaceFolder(folder);
@@ -370,7 +359,6 @@ export function activate(context: ExtensionContext) {
     }
 
     Workspace.onDidOpenTextDocument(didOpenTextDocument);
-    //Workspace.onDidCloseTextDocument(didCloseTextDocument);
     Workspace.textDocuments.forEach(didOpenTextDocument);
     Workspace.onDidChangeWorkspaceFolders((event) => {
         for (let folder of event.removed) {
