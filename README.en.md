@@ -151,6 +151,10 @@ It is a custom global the extension does not know about. Add it to the settings:
 
 Indexing a large project takes a moment on first open. If it never finishes, check the log at `server/log/service.log`.
 
+**The extension does not start at all, and `server/log/` is empty**
+
+The language server never got as far as running Lua. The most common cause is a missing `server/bin/<platform>/main.lua` bootstrapper — the executable loads it unconditionally at startup. See [CONTRIBUTING.md](CONTRIBUTING.md) for details. When installed from VSIX, reinstalling the extension restores it.
+
 **Only diagnose the file I have open**
 
 Set `miliastraLsp.diagnostics.neededFileStatus` to `Opened` for the rules you care about to cut background work:
@@ -171,6 +175,8 @@ Set `miliastraLsp.diagnostics.neededFileStatus` to `Opened` for the rules you ca
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for build, debug and project layout details.
+
+> **Note for contributors:** `server/bin/<platform>/main.lua` next to the `lua-language-server` executable is a **required bootstrapper**, not an unused leftover. The `--exe` build loads it unconditionally at startup, so deleting it breaks the extension completely. Because the whole `server/bin` directory is gitignored, git cannot restore it — keep a copy.
 
 ## Credits
 

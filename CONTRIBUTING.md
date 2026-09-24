@@ -36,7 +36,7 @@ MLSP/
 │   │   ├── workspace/           # 工作区文件与模块解析
 │   │   ├── brave/ + pub/        # 基于 bee.thread 的多线程任务分发
 │   │   └── ...
-│   └── bin/                     # 各平台可执行文件（被 .gitignore 忽略）
+│   └── bin/                     # 平台二进制 + 必需引导器 main.lua（被 .gitignore 忽略）
 ├── syntaxes/lua.tmLanguage.json # TextMate 语法高亮
 ├── language-configuration.json  # 括号、注释、缩进规则
 ├── images/logo.png              # 扩展图标
@@ -71,6 +71,25 @@ server/bin/{Windows,Linux,macOS}/lua-language-server -E server/main.lua
 ```
 
 > `server/bin` 目录已被 `.gitignore` 忽略，仓库中不包含平台二进制，需要自行准备与平台匹配的 `lua-language-server` 可执行文件。
+
+### ⚠️ `server/bin/<平台>/main.lua` 是必需的引导器，切勿删除
+
+每个平台的 `bin` 目录下除了可执行文件本身，还必须有官方发行包自带的 `main.lua`：
+
+```
+server/bin/Windows/main.lua    # 引导器（Bootstrap）
+server/bin/Windows/lua-language-server.exe
+```
+
+这个 exe 是 `--exe` 构建，**启动时会无条件加载与自己同目录的 `main.lua`**，再由它读取 `arg[0]` 加载我们真正指定的脚本。因此 `-E server/main.lua` 只是引导器的入参，并不代表引导器可以省略。
+
+删掉它会立刻导致扩展无法启动，且**服务端一行 Lua 都不会执行**——因为进程在 C 引导阶段就退出了，`server/log/` 也不会生成。报错信息形如：
+
+```
+lua-language-server.exe: cannot open ...\server\bin\Windows\main.lua: No such file or directory
+```
+
+> 排查提示：这个文件不在任何 `require` 调用里，静态依赖分析会把它判成「无用文件」。判断服务端文件是否可删时，**不要只依赖 `require` 引用图**。另外整个 `server/bin` 都在 `.gitignore` 中，误删后 `git` 无法帮你恢复，只能从官方发行包或历史 `.vsix` 里取回。
 
 ### 附加调试器
 

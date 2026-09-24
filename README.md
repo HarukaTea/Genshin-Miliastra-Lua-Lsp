@@ -151,6 +151,10 @@ code --install-extension miliastraLsp-0.0.3.vsix
 
 首次打开较大的项目时需要建立索引，稍等片刻即可。如果长时间不结束，检查 `server/log/service.log` 中的日志。
 
+**扩展完全启动不起来，且 `server/log/` 是空的**
+
+说明语言服务还没执行到 Lua 代码就退出了。最常见的原因是缺少 `server/bin/<平台>/main.lua` 引导器——可执行文件启动时会无条件加载它。详见 [CONTRIBUTING.md](CONTRIBUTING.md)。如果是通过 VSIX 安装的，重新安装扩展即可恢复。
+
 **只想让诊断检查当前打开的文件**
 
 把对应规则的 `miliastraLsp.diagnostics.neededFileStatus` 设为 `Opened`，可以减少后台开销：
