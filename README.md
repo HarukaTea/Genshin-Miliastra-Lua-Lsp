@@ -170,7 +170,15 @@ code --install-extension miliastraLsp-0.0.3.vsix
 
 ## 相关文档
 
-- [千星奇域 API 文档（本地生成版）](千星奇域API文档%5BDS生成%5D.html)
+完整的 API 参考文档位于 `docs/`，基于 VitePress 构建：
+
+```bash
+cd docs
+npm install
+npm run dev      # 本地预览 http://localhost:5173
+```
+
+改造之前的单文件静态页面保留为归档：[docs/api-reference.html](docs/api-reference.html)。
 
 ## 参与开发
 

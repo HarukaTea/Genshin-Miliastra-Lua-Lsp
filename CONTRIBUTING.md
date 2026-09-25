@@ -40,7 +40,19 @@ MLSP/
 ├── syntaxes/lua.tmLanguage.json # TextMate 语法高亮
 ├── language-configuration.json  # 括号、注释、缩进规则
 ├── images/logo.png              # 扩展图标
-├── docs/                        # README 截图
+├── docs/                        # API 文档站（独立子包，见下）
+│   ├── package.json             # VitePress 工程（与扩展包完全隔离）
+│   ├── .vitepress/
+│   │   ├── config.mts           # 站点配置（读取生成的 sidebar.json）
+│   │   └── sidebar.json         # 由生成脚本产出
+│   ├── scripts/
+│   │   ├── extract-api.mjs      # 从 api-reference.html 提取 API 数据
+│   │   ├── build-api-docs.mjs   # 生成 Markdown 页面与侧边栏
+│   │   └── verify-docs.mjs      # 静态校验链接 / 锚点
+│   ├── api/                     # 生成的 Markdown（已 gitignore）
+│   ├── index.md                 # 站点首页
+│   ├── api-reference.html       # 改造前的单文件页面（归档）
+│   └── Snipaste_*.png           # README 截图
 ├── package.json                 # 扩展清单与 54 项配置声明
 └── package.nls.json             # 配置项文案（中文）
 ```
@@ -105,6 +117,44 @@ lua-language-server.exe: cannot open ...\server\bin\Windows\main.lua: No such fi
 
 2. 在 VS Code 中打开 `server/` 目录，使用 `server/.vscode/launch.json` 中的 **附加** 配置连接调试器。默认地址为 `127.0.0.1:11413`，需要与上面的 `debuggerPort` 保持一致。
 
+## API 文档站
+
+`docs/` 是一个**独立的 VitePress 子包**，有自己的 `package.json`。之所以不把 VitePress 放进根 `package.json`，是因为根清单同时是 VS Code 扩展清单，`vsce` 对 `engines`、`main`、`contributes` 等字段有严格校验，混入文档依赖会污染扩展包。
+
+```bash
+cd docs
+npm install
+npm run dev      # 本地预览
+npm run build    # 构建到 docs/.vitepress/dist
+npm run gen      # 仅重新生成 Markdown
+```
+
+### 文档内容从哪来
+
+`docs/api/` 下的 Markdown **全部由脚本生成，不要手改**。数据源是 `docs/api-reference.html`——那是改造前的单文件页面，API 以 JS 字面量内联在 `<script>` 里。生成链路：
+
+```
+docs/api-reference.html
+  └─ scripts/extract-api.mjs      提取 GLOBALS / CLASSES / ENUMS / INHERIT 等常量并在沙箱求值
+       └─ scripts/build-api-docs.mjs   渲染为 Markdown + .vitepress/sidebar.json
+```
+
+改了 API 数据后重新生成即可：
+
+```bash
+cd docs && npm run gen
+```
+
+`docs/api/` 与 `.vitepress/sidebar.json` 已加入 `docs/.gitignore`，不入库以免产生噪音 diff；克隆后跑一次 `npm run gen` 就会重建。
+
+### 校验
+
+```bash
+node docs/scripts/verify-docs.mjs
+```
+
+会检查侧边栏与 Markdown 里的全部内部链接、锚点是否可解析，以及锚点有无重复。**新增生成逻辑后建议跑一次**——锚点重复是这类批量生成最容易出的问题（例如每个类都输出 `### 属性`，就会产生 19 个同名锚点）。
+
 ## 打包
 
 ```bash
@@ -129,7 +179,8 @@ npx vsce package
 
 ## 相关文档
 
-- [千星奇域 API 文档（本地生成版）](千星奇域API文档%5BDS生成%5D.html)
+- API 文档站源码：[docs/](docs/)（VitePress，见上文「API 文档站」）
+- 改造前的单文件页面（归档）：[docs/api-reference.html](docs/api-reference.html)
 
 ## 致谢
 

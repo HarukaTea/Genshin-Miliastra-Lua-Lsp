@@ -23,12 +23,12 @@ A Visual Studio Code extension for scripting in *Genshin Impact*'s **Miliastra W
 
 ## Installation
 
-Open the Extensions view in VS Code, click `...` in the top-right corner → **Install from VSIX...**, and pick `miliastraLsp-0.0.2.vsix`.
+Open the Extensions view in VS Code, click `...` in the top-right corner → **Install from VSIX...**, and pick `miliastraLsp-0.0.3.vsix`.
 
 Or from the command line:
 
 ```bash
-code --install-extension miliastraLsp-0.0.2.vsix
+code --install-extension miliastraLsp-0.0.3.vsix
 ```
 
 ### Requirements
@@ -170,7 +170,15 @@ Set `miliastraLsp.diagnostics.neededFileStatus` to `Opened` for the rules you ca
 
 ## Documentation
 
-- [Miliastra API reference (locally generated)](千星奇域API文档%5BDS生成%5D.html)
+The full API reference lives in `docs/` and is built with VitePress:
+
+```bash
+cd docs
+npm install
+npm run dev      # preview at http://localhost:5173
+```
+
+The original single-file static page is kept as an archive: [docs/api-reference.html](docs/api-reference.html).
 
 ## Contributing
 
