@@ -147,7 +147,7 @@ local ConfigTemplate = {
         useFilesExclude   = {true,    Boolean},
         loadRequiredFiles = {true,    Boolean},
         maxPreload        = {1000,    Integer},
-        preloadFileSize   = {100,     Integer},
+        preloadFileSize   = {500,     Integer},
         library           = {{},      Array2Hash()},
     },
     completion = {

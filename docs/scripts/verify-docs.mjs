@@ -57,7 +57,17 @@ for (const p of pages) {
   read(p).split('\n').forEach((line, i) => {
     const m = /^(#{1,6})\s+(.*?)\s*$/.exec(line)
     if (!m) return
-    const a = slug(m[2])
+    let text = m[2]
+    // 显式锚点 `{#foo}` 优先，这是 VitePress 支持的写法
+    const explicit = /\{#([^}]+)\}\s*$/.exec(text)
+    let a
+    if (explicit) {
+      a = explicit[1]
+      text = text.slice(0, explicit.index)
+    } else {
+      a = slug(text)
+    }
+    if (!a) return // 纯中文标题在 VitePress 下会得到空锚点，不算冲突
     if (seen.has(a)) problems.push(`锚点重复: ${routeOf(p)}#${a}（行 ${seen.get(a)} 与 ${i + 1}）`)
     else seen.set(a, i + 1)
     set.add(a)
@@ -117,26 +127,39 @@ for (const p of pages) {
 }
 console.log(`Markdown 内部链接校验：${checkedLinks} 条`)
 
-/* ---------- 5. 静态文件与配置 ---------- */
-const htmlRef = resolve(DOCS, 'api-reference.html')
-if (!existsSync(htmlRef)) problems.push('缺少归档页 api-reference.html')
-else notes.push(`归档页 api-reference.html (${(statSync(htmlRef).size / 1024).toFixed(1)} KB)`)
+/* ---------- 5. 配置与数据源 ---------- */
+const dataSrc = resolve(DOCS, 'scripts/api-data.json')
+if (!existsSync(dataSrc)) problems.push('缺少数据源 scripts/api-data.json')
+else {
+  const d = JSON.parse(read(dataSrc))
+  notes.push(`数据源 api-data.json：GLOBALS ${d.GLOBALS.length} / CLASSES ${d.CLASSES.length} / ENUMS ${d.ENUMS.length}`)
+  if (existsSync(resolve(DOCS, 'api-reference.html'))) {
+    problems.push('api-reference.html 仍存在，但流程已改用 api-data.json，应删除以免混淆')
+  }
+}
 
 const cfg = resolve(DOCS, '.vitepress/config.mts')
 if (!existsSync(cfg)) problems.push('缺少 .vitepress/config.mts')
 else {
   const c = read(cfg)
-  for (const need of ['sidebar.json', 'lang:', 'title:', 'themeConfig', "provider: 'local'"]) {
+  for (const need of ['sidebar.json', 'lang:', 'title:', 'themeConfig', "provider: 'local'", 'theme/index.mts']) {
     if (!c.includes(need)) problems.push(`config.mts 缺少关键配置: ${need}`)
   }
-  if (c.includes('readFileSync')) {
-    // 确认 sidebar.json 结构能被 JSON.parse
-    JSON.parse(read(sbPath))
-    notes.push('config.mts 读取 sidebar.json 的路径正确（同目录 .vitepress/）')
-  }
+  JSON.parse(read(sbPath))
+  notes.push('config.mts 已注册自定义主题并读取 sidebar.json')
 }
 
-/* ---------- 6. 生成物是否齐全 ---------- */
+/* ---------- 6. 主题文件 ---------- */
+for (const f of ['.vitepress/theme/index.mts', '.vitepress/theme/custom.css', 'public/logo.svg']) {
+  if (!existsSync(resolve(DOCS, f))) problems.push('缺少主题文件: ' + f)
+}
+const css = existsSync(resolve(DOCS, '.vitepress/theme/custom.css'))
+  ? read(resolve(DOCS, '.vitepress/theme/custom.css'))
+  : ''
+if (css && !css.includes('#087ea4')) problems.push('custom.css 未包含原页面品牌色 #087ea4')
+else notes.push('主题配色包含品牌色 #087ea4')
+
+/* ---------- 7. 生成物是否齐全 ---------- */
 const expect = ['index.md', 'api/index.md', 'api/globals.md', 'api/types.md', 'api/enums/index.md']
 for (const e of expect) if (!existsSync(resolve(DOCS, e))) problems.push('缺少生成文件: ' + e)
 const enumPages = readdirSync(resolve(DOCS, 'api/enums')).filter(f => f.endsWith('.md') && f !== 'index.md')

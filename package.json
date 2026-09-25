@@ -960,7 +960,7 @@
 					"type": "integer"
 				},
 				"miliastraLsp.workspace.preloadFileSize": {
-					"default": 100,
+					"default": 500,
 					"markdownDescription": "%config.workspace.preloadFileSize%",
 					"scope": "resource",
 					"type": "integer"
@@ -1135,5 +1135,5 @@
 	"main": "./client/out/extension",
 	"name": "miliastraLsp",
 	"publisher": "HarukaTea",
-	"version": "0.0.4"
+	"version": "0.0.7"
 }

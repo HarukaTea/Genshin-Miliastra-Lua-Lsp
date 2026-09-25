@@ -178,8 +178,6 @@ npm install
 npm run dev      # preview at http://localhost:5173
 ```
 
-The original single-file static page is kept as an archive: [docs/api-reference.html](docs/api-reference.html).
-
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for build, debug and project layout details.

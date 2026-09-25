@@ -186,12 +186,20 @@ m.binaryMeta = {
     [">"] = "__lt",
     ["<="] = "__le",
     [">="] = "__le",
-    [".."] = "__concat"
+    [".."] = "__concat",
+    -- Lua 5.3 位运算对应的元方法
+    ["&"] = "__band",
+    ["|"] = "__bor",
+    ["~"] = "__bxor",
+    ["<<"] = "__shl",
+    [">>"] = "__shr",
 }
 
 m.unaryMeta = {
     ["-"] = "__unm",
-    ["#"] = "__len"
+    ["#"] = "__len",
+    -- Lua 5.3 按位取反
+    ["~"] = "__bnot",
 }
 
 local NIL = setmetatable({'<nil>'}, { __tostring = function () return 'nil' end })

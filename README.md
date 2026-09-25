@@ -178,8 +178,6 @@ npm install
 npm run dev      # 本地预览 http://localhost:5173
 ```
 
-改造之前的单文件静态页面保留为归档：[docs/api-reference.html](docs/api-reference.html)。
-
 ## 参与开发
 
 构建、调试与项目结构说明请见 [CONTRIBUTING.md](CONTRIBUTING.md)。

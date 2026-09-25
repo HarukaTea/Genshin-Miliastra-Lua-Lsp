@@ -12,10 +12,6 @@ hero:
     - theme: alt
       text: 类型索引
       link: /api/types
-    - theme: alt
-      text: 旧版单页
-      link: /api-reference.html
-      target: _blank
 
 features:
   - title: 全局对象
@@ -30,7 +26,8 @@ features:
 ---
 
 ::: tip 关于本站
-本站由 [`docs/scripts/build-api-docs.mjs`](./scripts/build-api-docs.mjs) 从项目内嵌的 API 定义自动生成，
+本站的数据源是 [`docs/scripts/api-data.json`](./scripts/api-data.json)，
+所有页面由 [`docs/scripts/build-api-docs.mjs`](./scripts/build-api-docs.mjs) 自动生成。
 运行 `npm run gen` 可重新生成，请勿直接手改 `docs/api/` 下的 Markdown。
 :::
 

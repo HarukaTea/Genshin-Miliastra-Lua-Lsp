@@ -8,6 +8,7 @@
 import { readFileSync, existsSync, readdirSync } from 'node:fs'
 import { resolve, dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { verifyWorkflow } from './verify-workflow.mjs'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const ROOT = resolve(__dirname, '..', '..')   // 仓库根目录（本脚本位于 docs/scripts/）
@@ -35,7 +36,7 @@ const scan = []
     const p = join(d, e.name)
     const r = rel ? rel + '/' + e.name : e.name
     if (e.isDirectory()) walk(p, r)
-    else if (/\.(md|json|html|txt)$/.test(e.name) && e.name !== 'api-reference.html') scan.push([r, p])
+    else if (/\.(md|json|html|txt|yml)$/.test(e.name)) scan.push([r, p])
   }
 })(ROOT, '')
 for (const [r, p] of scan) {
@@ -62,15 +63,21 @@ const need = [
   'docs/package.json',
   'docs/.vitepress/config.mts',
   'docs/.vitepress/sidebar.json',
+  'docs/.vitepress/theme/index.mts',
+  'docs/.vitepress/theme/custom.css',
+  'docs/public/logo.svg',
   'docs/index.md',
-  'docs/api-reference.html',
+  'docs/scripts/api-data.json',
   'docs/scripts/extract-api.mjs',
+  'docs/scripts/snapshot-api.mjs',
   'docs/scripts/build-api-docs.mjs',
   'docs/scripts/verify-docs.mjs',
+  'docs/scripts/verify-integration.mjs',
   'docs/api/index.md',
   'docs/api/globals.md',
   'docs/api/types.md',
-  'docs/api/enums/index.md'
+  'docs/api/enums/index.md',
+  '.github/workflows/deploy-docs.yml'
 ]
 for (const n of need) { if (!exists(n)) fail('缺少 ' + n) }
 const enumN = existsSync(resolve(ROOT, 'docs/api/enums'))
@@ -98,6 +105,10 @@ const docsPkg = JSON.parse(read(resolve(ROOT, 'docs/package.json')))
 if (!docsPkg.private) fail('docs/package.json 应标记 private')
 if (!docsPkg.devDependencies?.vitepress) fail('docs/package.json 缺少 vitepress 依赖')
 console.log(`  docs 子包: ${docsPkg.name} (private=${docsPkg.private}) ✓`)
+
+console.log('\n=== 6. GitHub Actions 工作流 ===')
+// 直接调用，避免子进程（部分沙箱环境禁止 spawn）
+bad += verifyWorkflow(ROOT)
 
 console.log('\n' + (bad ? `发现 ${bad} 个问题` : '全部通过'))
 process.exit(bad ? 1 : 0)

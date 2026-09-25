@@ -6,6 +6,7 @@
   "scripts": {
     "gen": "node scripts/build-api-docs.mjs",
     "verify": "node scripts/verify-docs.mjs && node scripts/verify-integration.mjs",
+    "verify:workflow": "node scripts/verify-workflow.mjs",
     "dev": "npm run gen && vitepress dev",
     "build": "npm run gen && vitepress build",
     "preview": "vitepress preview"

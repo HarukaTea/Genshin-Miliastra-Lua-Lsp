@@ -14,14 +14,14 @@
 import { writeFileSync, mkdirSync, rmSync, existsSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { extractApiData, buildSignature } from './extract-api.mjs'
+import { extractApiData, buildSignature, anchorOf, loadApiData } from './extract-api.mjs'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const ROOT = resolve(__dirname, '..')
 const OUT = resolve(ROOT, 'api')
 const VP = resolve(ROOT, '.vitepress')
 
-const data = extractApiData(resolve(ROOT, 'api-reference.html'))
+const data = loadApiData(ROOT)
 const { GLOBALS, CLASSES, ENUMS, INHERIT } = data
 
 /* ---------- 小工具 ---------- */
@@ -124,10 +124,6 @@ ${
 | 子类 | 继承自 |
 | --- | --- |
 ${INHERIT.map(([child, parent]) => `| ${code(child)} | ${code(parent)} |`).join('\n')}
-
-## 历史版本
-
-改造之前的单文件静态页面保留为归档：[api-reference.html](/api-reference.html)。
 `
 
 /* ---------- api/globals.md ---------- */
@@ -191,8 +187,11 @@ for (const c of CLASSES) {
   if (methods.length) {
     typesMd += `### ${c.name} 方法\n\n`
     for (const m of methods) {
-      // 用 h4 而非 h3：避免锚点冲突，同时也不让方法挤满右侧大纲
-      typesMd += `#### ${code(buildSignature(m))}\n\n`
+      // 用 h4 而非 h3：避免锚点冲突，同时也不让方法挤满右侧大纲。
+      // 显式 {#...} 锚点由 anchorOf 生成，与 VitePress 自身算法一致，便于深链接。
+      const sig = buildSignature(m)
+      const id = anchorOf(sig)
+      typesMd += `#### ${code(sig)}${id ? ` {#${id}}` : ''}\n\n`
       const ret = m.r ? `**返回**：${code(m.r)}\n\n` : ''
       typesMd += `${cell(m.d)}\n\n${ret}`
       if ((m.args || []).length) {

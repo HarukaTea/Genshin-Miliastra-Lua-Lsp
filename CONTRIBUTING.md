@@ -43,16 +43,21 @@ MLSP/
 ├── docs/                        # API 文档站（独立子包，见下）
 │   ├── package.json             # VitePress 工程（与扩展包完全隔离）
 │   ├── .vitepress/
-│   │   ├── config.mts           # 站点配置（读取生成的 sidebar.json）
-│   │   └── sidebar.json         # 由生成脚本产出
+│   │   ├── config.mts           # 站点配置（注册主题、读取 sidebar.json）
+│   │   ├── sidebar.json         # 由生成脚本产出
+│   │   └── theme/               # 自定义主题：仅覆盖配色
+│   ├── public/logo.svg          # 站点图标（取自改造前的单页）
 │   ├── scripts/
-│   │   ├── extract-api.mjs      # 从 api-reference.html 提取 API 数据
+│   │   ├── api-data.json        # API 数据源（生成流程的唯一输入）
+│   │   ├── snapshot-api.mjs     # 从历史 HTML 抽取 → api-data.json
+│   │   ├── extract-api.mjs      # 读取数据 + 锚点算法
 │   │   ├── build-api-docs.mjs   # 生成 Markdown 页面与侧边栏
-│   │   └── verify-docs.mjs      # 静态校验链接 / 锚点
+│   │   ├── verify-docs.mjs      # 校验链接 / 锚点
+│   │   └── verify-integration.mjs # 校验与扩展包的隔离
 │   ├── api/                     # 生成的 Markdown（已 gitignore）
 │   ├── index.md                 # 站点首页
-│   ├── api-reference.html       # 改造前的单文件页面（归档）
 │   └── Snipaste_*.png           # README 截图
+├── .github/workflows/deploy-docs.yml  # 自动部署文档站到 GitHub Pages
 ├── package.json                 # 扩展清单与 54 项配置声明
 └── package.nls.json             # 配置项文案（中文）
 ```
@@ -131,29 +136,41 @@ npm run gen      # 仅重新生成 Markdown
 
 ### 文档内容从哪来
 
-`docs/api/` 下的 Markdown **全部由脚本生成，不要手改**。数据源是 `docs/api-reference.html`——那是改造前的单文件页面，API 以 JS 字面量内联在 `<script>` 里。生成链路：
+`docs/api/` 下的 Markdown **全部由脚本生成，不要手改**。数据源是 `docs/scripts/api-data.json`：
 
 ```
-docs/api-reference.html
-  └─ scripts/extract-api.mjs      提取 GLOBALS / CLASSES / ENUMS / INHERIT 等常量并在沙箱求值
-       └─ scripts/build-api-docs.mjs   渲染为 Markdown + .vitepress/sidebar.json
+docs/scripts/api-data.json          ← 唯一数据源，改 API 直接改这里
+  └─ scripts/extract-api.mjs          读取数据 + 提供与 VitePress 一致的锚点算法
+       └─ scripts/build-api-docs.mjs  渲染为 Markdown + .vitepress/sidebar.json
 ```
 
-改了 API 数据后重新生成即可：
+改了数据后重新生成即可：
 
 ```bash
 cd docs && npm run gen
 ```
+
+> `api-data.json` 最初由 `scripts/snapshot-api.mjs` 从改造前的单文件 HTML（`api-reference.html`）抽取而来。
+> 该 HTML 已按计划删除，`snapshot-api.mjs` 仅作为历史工具保留——若将来又拿到新版 HTML，可用它重新生成快照。
 
 `docs/api/` 与 `.vitepress/sidebar.json` 已加入 `docs/.gitignore`，不入库以免产生噪音 diff；克隆后跑一次 `npm run gen` 就会重建。
 
 ### 校验
 
 ```bash
-node docs/scripts/verify-docs.mjs
+cd docs && npm run verify
 ```
 
-会检查侧边栏与 Markdown 里的全部内部链接、锚点是否可解析，以及锚点有无重复。**新增生成逻辑后建议跑一次**——锚点重复是这类批量生成最容易出的问题（例如每个类都输出 `### 属性`，就会产生 19 个同名锚点）。
+会检查侧边栏与 Markdown 里的全部内部链接、锚点是否可解析、锚点有无重复，并确认文档子包没有污染扩展清单。**改了生成逻辑后务必跑一次**——这类批量生成最容易出两类问题：
+
+- **锚点重复**：例如每个类都输出 `### 属性`，就会产生 19 个同名锚点。现在改为 `### <类名> 属性`。
+- **锚点与 VitePress 不一致**：方法标题用显式 `{#...}` 锚点，由 `extract-api.mjs` 的 `anchorOf()` 生成。该函数必须与 VitePress 的 slugify 保持一致（**先小写**、去除非 `\w` 字符、空格转连字符），否则深链接会静默失效。
+
+### 自动部署
+
+`.github/workflows/deploy-docs.yml` 会在 `docs/**` 变更推送到主分支时，自动构建并发布到 GitHub Pages。
+
+首次启用需要在仓库 **Settings → Pages → Build and deployment → Source** 选择 **GitHub Actions**。工作流里已用 `configure-pages` 输出的 `base_path` 覆盖 `--base`，因此部署在 `https://<user>.github.io/<repo>/` 子路径下也能正确加载资源。
 
 ## 打包
 
@@ -180,7 +197,6 @@ npx vsce package
 ## 相关文档
 
 - API 文档站源码：[docs/](docs/)（VitePress，见上文「API 文档站」）
-- 改造前的单文件页面（归档）：[docs/api-reference.html](docs/api-reference.html)
 
 ## 致谢
 

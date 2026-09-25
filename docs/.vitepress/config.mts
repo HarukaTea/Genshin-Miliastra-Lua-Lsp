@@ -14,21 +14,32 @@ export default defineConfig({
   lang: 'zh-CN',
   title: '千星奇域 Lua API',
   description: '千星奇域客户端脚本 Lua API 参考文档',
+  // 自定义主题：仅覆盖配色，布局沿用默认主题
+  theme: resolve(__dirname, 'theme/index.mts'),
   cleanUrls: true,
   lastUpdated: true,
   ignoreDeadLinks: true,
+
+  // 代码块使用深色主题，与原单文件页面一致
+  markdown: {
+    theme: 'dark-plus'
+  },
+
+  // 原页面代码块为深色，整体也以深色呈现更协调
+  appearance: 'force-dark',
 
   head: [
     ['meta', { name: 'theme-color', content: '#087ea4' }]
   ],
 
   themeConfig: {
+    logo: '/logo.svg',
+
     nav: [
       { text: '概述', link: '/api/' },
       { text: '全局对象', link: '/api/globals' },
       { text: '类型', link: '/api/types' },
-      { text: '枚举', link: '/api/enums/' },
-      { text: '旧版单页', link: '/api-reference.html', target: '_blank' }
+      { text: '枚举', link: '/api/enums/' }
     ],
 
     sidebar,
@@ -71,7 +82,7 @@ export default defineConfig({
     docFooter: { prev: '上一篇', next: '下一篇' },
 
     footer: {
-      message: '本页内容基于项目内置的 API 定义整理',
+      message: '由 docs/scripts 从 scripts/api-data.json 自动生成',
       copyright: 'MIT Licensed'
     },
 

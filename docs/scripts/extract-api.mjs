@@ -5,7 +5,7 @@
  * 这里逐个截取顶层 `const NAME = …;` 声明并在沙箱中求值，得到结构化数据，
  * 供 build-api-docs.mjs 生成 VitePress 的 Markdown 页面。
  */
-import { readFileSync, writeFileSync, mkdirSync } from 'node:fs'
+import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -88,10 +88,41 @@ export function buildSignature(m) {
   return `${pre}${m.n}(${argList(m.args)})`
 }
 
+/**
+ * 生成与 VitePress 完全一致的标题锚点。
+ *
+ * VitePress 的 markdown-it-anchor 默认 slugify：
+ *   1. 先把标题做 markdown 内联解析（行内 `code` 的反引号被去掉）
+ *   2. 转为小写
+ *   3. 去除非 [\w] 字符（\w = 字母数字下划线，**中文与标点都会被移除**）
+ *   4. 连续空白转为单个连字符，并去掉首尾连字符
+ * 注意：纯中文标题会得到空锚点，因此不要依赖中文标题做深链接。
+ */
+export function anchorOf(text) {
+  return String(text)
+    .trim()
+    .toLowerCase()
+    .replace(/[^\w\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
+}
+
+/** 读取 API 数据：优先使用 JSON 快照，回退到原始 HTML */
+export function loadApiData(root) {
+  const jsonPath = resolve(root, 'scripts/api-data.json')
+  if (existsSync(jsonPath)) {
+    const d = JSON.parse(readFileSync(jsonPath, 'utf8'))
+    delete d.$comment
+    return d
+  }
+  return extractApiData(resolve(root, 'api-reference.html'))
+}
+
 if (process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1])) {
   // 自检模式：只提取并打印统计，不写任何文件
-  const htmlPath = process.argv[2] || resolve(ROOT, 'api-reference.html')
-  const d = extractApiData(htmlPath)
+  const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+  const d = loadApiData(root)
   let props = 0
   let methods = 0
   for (const c of d.CLASSES) {
@@ -100,7 +131,8 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1
   }
   let enumVals = 0
   for (const e of d.ENUMS) enumVals += (e.values || []).length
-  console.log('提取成功')
+  const src = existsSync(resolve(root, 'scripts/api-data.json')) ? 'scripts/api-data.json' : 'api-reference.html'
+  console.log('数据源：' + src)
   console.log(`  GLOBALS  ${d.GLOBALS.length}`)
   console.log(`  CLASSES  ${d.CLASSES.length}  (属性 ${props} / 方法 ${methods})`)
   console.log(`  ENUMS    ${d.ENUMS.length}  (枚举值 ${enumVals})`)

@@ -199,15 +199,23 @@ local function packList(start, list, finish)
     return list
 end
 
+-- 数值越大绑定越紧（父节点从栈顶往回取，见下方 tableSort）
 local BinaryLevel = {
     ['or']  = 1,
     ['and'] = 2,
+    -- 比较
     ['<=']  = 3,
     ['>=']  = 3,
     ['<']   = 3,
     ['>']   = 3,
     ['~=']  = 3,
     ['==']  = 3,
+    -- Lua 5.3 位运算：| ~ & << >> 的优先级高于比较、低于 `..`
+    ['|']   = 4,
+    ['~']   = 5,
+    ['&']   = 6,
+    ['<<']  = 7,
+    ['>>']  = 7,
     ['..']  = 8,
     ['+']   = 9,
     ['-']   = 9,
@@ -218,6 +226,7 @@ local BinaryLevel = {
     ['^']   = 11,
 }
 
+-- true 表示左结合
 local BinaryForward = {
     [01]  = true,
     [02]  = true,
